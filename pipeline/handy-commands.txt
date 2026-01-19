@@ -1,0 +1,11 @@
+docker run -it \
+-e POSTGRES_USER="root" \
+-e POSTGRES_PASSWORD="root" \
+-e POSTGRES_DB="ny-taxi-db" \
+-v ny-taxi-postgres:/var/lib/postgres \
+-p 5432:5432 \
+postgres:18
+
+uv run pgcli -h localhost -p 5432 -u root -d ny-taxi-db
+
+uv run jupyter nbconvert --to=script notebook.ipynb
