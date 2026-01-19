@@ -1,11 +1,36 @@
-docker run -it \
+docker run -it --rm \
 -e POSTGRES_USER="root" \
 -e POSTGRES_PASSWORD="root" \
 -e POSTGRES_DB="ny-taxi-db" \
 -v ny-taxi-postgres:/var/lib/postgres \
 -p 5432:5432 \
+--network="pg-network" \
+--name="pg-database" \
 postgres:18
 
 uv run pgcli -h localhost -p 5432 -u root -d ny-taxi-db
 
 uv run jupyter nbconvert --to=script notebook.ipynb
+
+docker run -it --rm \
+--network="pg-network" \
+taxi_ingest:v001 \
+--host="pg-database" \
+--port=5432 \
+--user="root" \
+--password="root" \
+--db="ny-taxi-db" \
+--year=2021 \
+--month=1 \
+--chunksize=100000
+
+docker network create pg-network
+
+docker run -it \
+-e PGADMIN_DEFAULT_EMAIL="admin@admin.com" \
+-e PGADMIN_DEFAULT_PASSWORD="root" \
+-v pgadmin_data:/var/lib/pgadmin \
+-p 8085:80 \
+--network="pg-network" \
+--name="pg-admin" \
+dpage/pgadmin4
