@@ -1,0 +1,32 @@
+# by default, all the containers we run in one docker compose are in the same network
+services:
+  pg-database:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: <password>
+      POSTGRES_DB: ny-taxi-db
+    ports:
+      - 5432:5432
+    volumes:
+      - ny-taxi-postgres:/var/lib/postgres
+    networks:
+      - pg-network
+  pg-admin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: <password>
+    ports:
+      - 8085:80
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - pg-network
+
+volumes:
+  ny-taxi-postgres:
+  pgadmin_data:
+
+networks:
+  pg-network:
