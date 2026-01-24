@@ -13,7 +13,7 @@ uv run pgcli -h localhost -p 5432 -u root -d ny-taxi-db
 uv run jupyter nbconvert --to=script notebook.ipynb
 
 docker run -it --rm \
---network="pg-network" \
+--network="pipeline_pg-network" \
 taxi_ingest:v001 \
 --host="pg-database" \
 --port=5432 \
