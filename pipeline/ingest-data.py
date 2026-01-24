@@ -11,10 +11,10 @@ def run(prefix, year, month, dtype, parse_dates, chunksize, engine, pg_table):
 
     for df_chunk in tqdm(df_iter):
         if first:
-            df_chunk.head(0).to_sql(name=pg_table, con=engine, if_exists='replace')
+            df_chunk.head(0).to_sql(name=pg_table, con=engine, if_exists='replace', index=False)
             first = False
             print('Table Created.')
-        df_chunk.to_sql(name=pg_table, con=engine, if_exists='append')
+        df_chunk.to_sql(name=pg_table, con=engine, if_exists='append', index=False)
 
         print("Inserted:", len(df_chunk))
 
