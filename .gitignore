@@ -211,3 +211,8 @@ __marimo__/
 
 # API keys
 keys/
+
+# Terraform files
+.terraform/
+*.tfstate
+*.tfstate.backup
