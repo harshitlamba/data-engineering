@@ -8,9 +8,9 @@ terraform {
 }
 
 provider "google" {
-  credentials = "./keys/terraform-sa-key.json"
-  project     = "ace-mote-484906-q2"
-  region      = "us-east1"
+  credentials = var.tf-sa-key-path
+  project     = var.project-name
+  region      = var.location
 }
 
 # auto-expire-bucket is the terraform resource name used for references
@@ -18,7 +18,7 @@ resource "google_storage_bucket" "auto-expire-bucket" {
   # dezoom_auto_expire_bucket is the actual bucket name in GCP; it must be globally unique, in lowercase
   name = "dezoom_auto_expire_bucket"
   # US would be multi-region and us-east1 would be single region
-  location = "US"
+  location = var.location
   # normally GCS buckets cannot be destroyed if they contain objects; force_destroy=true deletes everything inside 
   # it first, then delete the bucket.
   force_destroy = true
@@ -53,7 +53,7 @@ resource "google_bigquery_dataset" "demo-dataset" {
   description = "This is a demo dataset created using terraform"
   # location where the dataset is stored; "US" means multi-region in the US; all tables in the dataset must inherit this location
   # queries across datasets must be in the same location
-  location = "US"
+  location = var.location
   # default expiration time (in ms) for tables created in this dataset; any table created without its own expiration will be
   # automatically deleted after 1 hour
   default_table_expiration_ms = 3600000
