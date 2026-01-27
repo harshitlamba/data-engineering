@@ -34,3 +34,31 @@ docker run -it \
 --network="pg-network" \
 --name="pg-admin" \
 dpage/pgadmin4
+
+------------- Homework-Module 1 -------------
+
+docker run -it --rm \
+--network="module1_network-module-one" \
+module1_ingest:v01 \
+--host="pg-module-one" \
+--port=5432 \
+--user="root" \
+--password="root" \
+--db="module-one-db" \
+--table="green_tripdata_202511" \
+--filepath="./" \
+--filename="green_tripdata_2025-11.parquet" \
+--chunksize=100000
+
+docker run -it --rm \
+--network="module1_network-module-one" \
+module1_ingest:v01 \
+--host="pg-module-one" \
+--port=5432 \
+--user="root" \
+--password="root" \
+--db="module-one-db" \
+--table="taxi_zone_lookup" \
+--filepath="./" \
+--filename="taxi_zone_lookup.csv" \
+--chunksize=100000
