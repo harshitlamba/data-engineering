@@ -209,6 +209,9 @@ __marimo__/
 # Parquet
 *.parquet
 
+# Csv
+*.csv
+
 # API keys
 keys/
 
