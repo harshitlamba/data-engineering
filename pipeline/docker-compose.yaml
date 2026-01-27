@@ -9,7 +9,7 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - ny-taxi-postgres:/var/lib/postgres
+      - ny-taxi-postgres:/var/lib/postgresql
     networks:
       - pg-network
   pg-admin:
