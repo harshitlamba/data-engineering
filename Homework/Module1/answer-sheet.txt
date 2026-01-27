@@ -1,4 +1,4 @@
-Answer 1: 23.5
+Answer 1: 25.3
 
 docker run -it --rm \
 --entrypoint=bash \
