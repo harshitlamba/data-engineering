@@ -1,0 +1,79 @@
+Airflow is an open source tool using which we can create, schedule and monitor many kind of workflows that execute periodically 
+in a specific order. It requires python version above 3.6.
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Workflow is a sequence of tasks. The workflows are defined using DAGs (Directed Acyclic Graphs). DAGs are a collection of all the tasks that 
+we need to run organized in away that reflects their relationships and dependencies.
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Task - a unit of work in a DAG; it is represented as a node in the DAG and written in Python. Example: A -> C -> E
+Here, task C is downstream of task A and upstream of task E.
+
+We need "Operator" methods to define a task. Operators define what actually gets done in a task.
+
+Operator - there are multiple kinds of operators. Example, BashOperator (to run a bash command), PythonOperator (to run a Python code) etc. 
+and we can write our customised operator as well. Each task is an implementation of an operator. 
+
+Execution Date - the logical date (start_date = logical_date) and time when an Airflow DAG run is supposed to be processed. 
+It does not indicate when the DAG actually runs but rather the time period the DAG run is meant to cover. A DAG is triggered after
+the start date/last run + schedule interval. Assume a start date is at 10.00 AM, 1st Jan 2022 and a schedule interval every 10 mins.
+The scheduler waits 10 mins and first DAG run would be executed at 10.10 AM (start date + schedule interval). So, the interval starts
+at 10.00 AM, elapses a schedule interval of 10 mins and then DAG is executed at 10.10 AM.
+
+Task Instance - Each task in the DAG is called a task instance. Every time a task is executed as defined in the DAG schedule, a task
+instance is created. Each run of a task is a separate task instance (for instance if a task is scheduled to run daily starting Monday
+it would execute on Monday and then Tuesday and so on - each time a separate task instance would be created).
+Task instance is an instance of a single task within a DAG run. It represents the execution of a task for a specific DAG run and 
+execution date. Task instances track the state and metadata of individual task executions.
+
+DAG Run - DAG run represents an instance of the entire DAG being executed. Each DAG run is associated with a specific execution date 
+and contains multiple task instances. It encapsulates all the task instances that need to be executed for that particular run. The
+attributes of a DAG run are Run ID, Execution Date and State (running, failed, success etc.)
+
+Task Lifecycle - Each task in the DAG goes through stages from start to completion. Every stage indicates the status of a specific 
+task instance. Example, if a task completes without any error, the status is success, when the task is running, the status is in 
+progress. There are a total of 11 stages in Airflow UI. If the task fails, it would be retried and the status would be upstream_failed.
+
+Backfill - This feature allows you to run historical DAG runs for a specific period, typically to process past data that was not 
+processed at the correct time. This is particularly useful when you have added a new DAG or when there was an issue with your DAG 
+runs that you need to correct by reprocessing past intervals. When you run the backfill command, Airflow will:
+1. Create DAG runs for each date in the specified range.
+2. Execute the tasks within each DAG run for the respective execution dates.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+To install Airflow, search for Apache Airflow github repository -> navigate to the "Installing from PyPI" section - it can be installed using
+pip; the package name is "apache-airflow":
+pip install 'apache-airflow==2.8.2' \
+--constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.8.2/constraints-3.8.txt"
+
+Note: In constraint, we need to change the file name to python version - example, for python 3.11, the constaints file name would be 
+"constraints-3.11.txt". This specifies a constraints file containing dependency versions that must be satisfied during installation. 
+--use-deprecated=legacy-resolver: This flag tells pip to use the deprecated legacy resolver instead of the newer resolver. This may be 
+necessary to resolve dependency conflicts that arise with the newer resolver.
+
+(On Mac) In case you get "error: command gcc failed with exit status 1", we need to first run: xcode-select --install
+on the command line to install macos command line tools and then run the pip install command
+
+When a user does a pip install (e.g. pip install tea), pip needs to work out the package’s dependencies (e.g. spoon, hot-water, tea-leaves 
+etc.) and what the versions of each of those dependencies it should install. Over the course of the dependency resolution process, pip 
+will need to download distribution files of the packages which are used to get the dependencies of a package. During dependency resolution, 
+pip needs to make assumptions about the package versions it needs to install and, later, check these assumptions were not incorrect. 
+When pip finds that an assumption it made earlier is incorrect, it has to backtrack, which means also discarding some of the work that has 
+already been done, and going back to choose another path. It is part of how dependency resolution for Python packages works.
+
+------------------------------------------------------------------------------------------------------------------------------
+
+In Apache Airflow 3.x, the CLI behavior around user management changed compared to Airflow 2.x. By default, Airflow 3 uses SimpleAuthManager 
+as its authentication manager. SimpleAuthManager does not include the users CLI commands, so running "airflow users" gives this error:
+airflow command error: argument GROUP_OR_COMMAND: invalid choice: 'users'
+This is because Airflow doesn’t register the users group in the CLI when this auth manager is active. So the CLI command for managing users 
+exists, but only if the FAB auth manager is enabled. To enable the users CLI commands, you need to configure Airflow to use the Fabric AppBuilder (FAB) 
+Auth Manager instead of SimpleAuthManager.
+
+
+When you start Airflow server with SimpleAuthManager, a simple_auth_manager_passwords.json.generated is created at the location 
+AIRFLOW_HOME/simple_auth_manager_passwords.json.generated, which contains the {"user":"password"} key-value pair; the password is automatically 
+generated. Use this key-value pair combination to log into the Airflow portal.

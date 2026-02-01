@@ -1,0 +1,64 @@
+We need to initialize a database for airflow. To do that, we first need to indicate the airflow home directory. By default "airflow" folder
+would be created in the home directory. If we want our database to be initialized in the present working directory, we need to export the 
+"AIRFLOW_HOME" environment variable to point to the current directory.
+
+export AIRFLOW_HOME=/path/to/directory/where/airflow-db-cfg-logs-get-created
+OR
+export AIRFLOW_HOME=$(pwd)
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+To initialize airflow db: airflow db migrate
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+To start the airflow server: airflow api-server -p 8080
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+You can check the current auth manager by: airflow config get-value core auth_manager
+
+To install and configure FAB Auth Manager:
+1) Install the necessary package: pip install apache-airflow-providers-fab
+2) Set it via environment variable: export AIRFLOW__CORE__AUTH_MANAGER=airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
+OR
+Make changes to the airflow.cfg file: auth_manager = airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
+
+To create the user for logging into the server UI (Works with Airflow 2.x): 
+airflow users create --username admin --firstname firstname --lastname lastname --role Admin --email admin@admin.com
+
+If you want to use SimpleAuthManager (Airflow 3.x), ensure that the AIRFLOW__CORE__AUTH_MANAGER enironment variable, or auth_manager value in config file is set to:
+airflow.api_fastapi.auth.managers.simple.simple_auth_manager.SimpleAuthManager
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+You can change the path where the simple_auth_manager_passwords.json.generated will be created by:
+Setting it via environment variable: export AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_PASSWORDS_FILE=/path/to/directory/simple_auth_manager_passwords.json.generated
+OR
+Make changes to the airflow.cfg file: simple_auth_manager_passwords_file = /path/to/directory/simple_auth_manager_passwords.json.generated
+
+In case you want to add/remove a new user, you can change the config file. Search for "simple_auth_manager_users", and add/remove the user:role combination, 
+and restart the Airflow server. 
+Example: simple_auth_manager_users = admin:admin,harshit:viewer
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+To execute DAGs, we have to start the airflow scheduler in a new terminal session.
+1) Set the AIRFLOW_HOME environment variable: export AIRFLOW_HOME=/path/to/directory/where/airflow-db-cfg-logs-get-created, OR, export AIRFLOW_HOME=$(pwd)
+2) Execute: airflow scheduler
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+To run Apache Airflow using docker, download the docker compose file using:
+curl -LfO 'https://airflow.apache.org/docs/apache-airflow/3.1.6/docker-compose.yaml'
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+CeleryExecutor is designed for distributed, high-scale production workloads across multiple machines, while LocalExecutor runs tasks in parallel on a single machine. 
+Architecture: LocalExecutor runs tasks within the scheduler process on one machine, whereas CeleryExecutor uses a message broker (like Redis or RabbitMQ) to distribute 
+tasks among multiple worker nodes.
+Scalability: CeleryExecutor allows for horizontal scaling (adding more machines), while LocalExecutor is limited by the resources of a single machine.
+Use Case: LocalExecutor is best for development, testing, or small-scale workflows. CeleryExecutor is necessary for production environments requiring high availability.
+
+In LocalExecutor, the scheduler and the workers are in the same Python process and the Dag files are read directly from the local filesystem by the scheduler. The 
+webserver runs on the same machine as the scheduler.
