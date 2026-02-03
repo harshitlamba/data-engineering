@@ -9,7 +9,7 @@ we need to run organized in away that reflects their relationships and dependenc
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Task - a unit of work in a DAG; it is represented as a node in the DAG and written in Python. Example: A -> C -> E
-Here, task C is downstream of task A and upstream of task E.
+Here, task C is downstream of task A and upstream of task E. The goal of the task is to achieve an objective.
 
 We need "Operator" methods to define a task. Operators define what actually gets done in a task.
 
@@ -36,11 +36,43 @@ Task Lifecycle - Each task in the DAG goes through stages from start to completi
 task instance. Example, if a task completes without any error, the status is success, when the task is running, the status is in 
 progress. There are a total of 11 stages in Airflow UI. If the task fails, it would be retried and the status would be upstream_failed.
 
+no_status - scheduler created an empty task instance
+scheduled - the scheduler determines that the task instance needs to run
+upstream_failed - the tasks's upstream task failed
+skipped - the task is skipped
+removed - the task has been removed
+queued - the scheduler sent the task to executor to run on the queue
+running - worker has picked up the task ans is now running
+success - task completes without any error
+failed - task has failed
+shutdown - task run has been aborted
+up_for_retry - if in the failed and shutdown stage, the max retry limit hasn't been reached, the task would be put in the retrial stage, i.e.,
+the task would be scheduled and rerun after a scheduled waiting time
+up_for_reschedule - when a task needs to wait for something external but should NOT fail or retry aggressively, and should not occupy 
+a worker slot while waiting. Example: You have a DAG that runs every hour, but the upstream system drops a file at an unpredictable time.
+File usually arrives within 30–60 minutes. You don’t want the task to fail and retry every few seconds. Airflow releases the worker, and
+after poke_interval, the scheduler schedules the task again. When the file appears, the task succeeds.
+
 Backfill - This feature allows you to run historical DAG runs for a specific period, typically to process past data that was not 
 processed at the correct time. This is particularly useful when you have added a new DAG or when there was an issue with your DAG 
 runs that you need to correct by reprocessing past intervals. When you run the backfill command, Airflow will:
 1. Create DAG runs for each date in the specified range.
 2. Execute the tasks within each DAG run for the respective execution dates.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Basic Architecture
+
+1) Data Engineer - configure airflow setup such as which database to use, the type of executor, user creation, etc. They create and manage DAGs through UI.
+The DAGs are visible to Scheduler and Workers.
+2) Scheduler - parses the DAGS and triggers task instances based on the schedule and dependencies
+3) Executor - takes tasks that are ready to run and submits them for execution
+4) Worker - actually run tasks, updates the task state, and reports back the task status to Metadata DB
+5) Metadata DB - stores Airflow's state, DAG runs, task instances, logs, variables, connections
+
+QUESTIONS:
+1) How does a task execute end-to-end?
+2) Difference between CeleryExecutor and LocalExecutor in detail
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
